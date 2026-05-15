@@ -9,10 +9,23 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-/* ✅ FIX RENDER (IMPORTANT) */
 const PORT = process.env.PORT || 3000;
 
+/* FILE STORAGE */
+const TASK_FILE = path.join(__dirname, "tasks.json");
+
 let tasks = [];
+if (fs.existsSync(TASK_FILE)) {
+  try {
+    tasks = JSON.parse(fs.readFileSync(TASK_FILE, "utf8"));
+  } catch {
+    tasks = [];
+  }
+}
+
+function saveTasks() {
+  fs.writeFileSync(TASK_FILE, JSON.stringify(tasks, null, 2));
+}
 
 /* USERS */
 const users = JSON.parse(
@@ -28,12 +41,11 @@ app.use(session({
   saveUninitialized: false
 }));
 
-/* LOGIN PAGE */
+/* LOGIN */
 app.get("/login", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "login.html"));
 });
 
-/* LOGIN */
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
 
@@ -56,27 +68,26 @@ app.get("/logout", (req, res) => {
   req.session.destroy(() => res.redirect("/login"));
 });
 
-/* USER INFO */
+/* USER */
 app.get("/me", (req, res) => {
   if (!req.session.user) return res.status(401).end();
   res.json(req.session.user);
 });
 
-/* PROTECTION HOME */
+/* HOME */
 app.get("/", (req, res) => {
   if (!req.session.user) return res.redirect("/login");
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-/* STATIC FILES */
 app.use(express.static(path.join(__dirname, "public")));
 
-/* SOCKET.IO */
+/* SOCKET */
 io.on("connection", (socket) => {
 
   socket.emit("update", tasks);
 
-  /* ADD TASK */
+  /* ADD */
   socket.on("addTask", ({ task, user }) => {
     if (!user) return;
 
@@ -87,45 +98,45 @@ io.on("connection", (socket) => {
       createdBy: user.username
     });
 
+    saveTasks();
     io.emit("update", tasks);
   });
 
-  /* UPDATE STATUS */
+  /* UPDATE */
   socket.on("updateStatus", ({ index, status }) => {
     if (!tasks[index]) return;
 
     tasks[index].status = status;
+    saveTasks();
 
     if (status === "terminé") {
-
       io.emit("update", tasks);
 
-      /* 10 sec delay avant suppression */
       setTimeout(() => {
         if (tasks[index] && tasks[index].status === "terminé") {
           tasks.splice(index, 1);
+          saveTasks();
           io.emit("update", tasks);
         }
       }, 10000);
-
     } else {
       io.emit("update", tasks);
     }
   });
 
-  /* DELETE TASK (ADMIN ONLY) */
+  /* DELETE */
   socket.on("deleteTask", ({ index, user }) => {
     if (!user || user.role !== "admin") return;
 
     if (tasks[index]) {
       tasks.splice(index, 1);
+      saveTasks();
       io.emit("update", tasks);
     }
   });
 
 });
 
-/* LISTEN */
 server.listen(PORT, "0.0.0.0", () => {
-  console.log("Serveur OK -> port " + PORT);
+  console.log("Server running on port " + PORT);
 });
