@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atelier</title>
+
+<style>
+:root{
+  --bg1:#f5f1e8;
+  --bg2:#efe6d6;
+  --gold:#ceaa33;
+  --dark:#0e293c;
+  --blue:#386488;
+  --orange:#d97706;
+  --red:#dc2626;
+  --green:#22c55e;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:linear-gradient(135deg,var(--bg1),var(--bg2));
+  color:var(--dark);
+}
+
+/* HEADER */
+header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  padding:14px 22px;
+  background:linear-gradient(135deg,#f9f4e8,#efe6d6);
+  border-bottom:4px solid var(--gold);
+  box-shadow:0 4px 18px rgba(0,0,0,0.06);
+}
+
+.logo{
+  height:52px;
+  background:rgba(255,255,255,0.7);
+  padding:6px 10px;
+  border-radius:14px;
+}
+
+.header-right{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-left:auto;
+}
+
+#userBox,
+#clock{
+  background:white;
+  padding:8px 14px;
+  border-radius:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.06);
+  font-weight:bold;
+  font-size:14px;
+}
+
+.logout{
+  border:none;
+  background:#e74c3c;
+  color:white;
+  padding:10px 14px;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:bold;
+  box-shadow:0 4px 12px rgba(231,76,60,0.25);
+}
+
+/* TABS */
+.tabs{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  padding:16px;
+  flex-wrap:wrap;
+}
+
+.tabs button{
+  border:none;
+  background:white;
+  padding:14px 24px;
+  border-radius:14px;
+  font-weight:bold;
+  cursor:pointer;
+  box-shadow:0 6px 16px rgba(0,0,0,0.08);
+  min-width:160px;
+}
+
+.tabs button.active{
+  background:var(--gold);
+  color:var(--dark);
+}
+
+/* VIEW */
+.view{
+  display:none;
+  padding:0 20px 20px;
+}
+
+.view.active{
+  display:block;
+}
+
+/* CARD */
+.card{
+  max-width:1200px;
+  margin:0 auto;
+  background:white;
+  padding:26px;
+  border-radius:24px;
+  box-shadow:0 14px 35px rgba(0,0,0,0.08);
+}
+
+/* FORM */
+input, select{
+  width:100%;
+  margin-top:10px;
+  padding:14px 16px;
+  border-radius:14px;
+  border:1px solid #ddd;
+  outline:none;
+  font-size:15px;
+}
+
+input:focus,
+select:focus{
+  border-color:var(--gold);
+  box-shadow:0 0 0 3px rgba(206,170,51,0.15);
+}
+
+.primary{
+  width:100%;
+  margin-top:12px;
+  border:none;
+  background:linear-gradient(135deg,#d9b541,#ceaa33);
+  color:var(--dark);
+  padding:14px;
+  border-radius:14px;
+  font-weight:bold;
+  cursor:pointer;
+  box-shadow:0 8px 18px rgba(206,170,51,0.25);
+}
+
+/* FILTERS */
+.filter-bar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:18px;
+  margin-bottom:8px;
+}
+
+.filter-bar button{
+  border:none;
+  background:white;
+  color:var(--dark);
+  padding:10px 14px;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:bold;
+  box-shadow:0 4px 12px rgba(0,0,0,0.06);
+}
+
+.filter-bar button.active{
+  background:var(--blue);
+  color:white;
+}
+
+/* TASKS */
+.task{
+  position:relative;
+  margin-top:14px;
+  padding:18px 18px 18px 24px;
+  border-radius:20px;
+  background:white;
+  box-shadow:0 10px 24px rgba(0,0,0,0.08);
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  align-items:center;
+  overflow:hidden;
+}
+
+.task::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:0;
+  width:7px;
+  height:100%;
+}
+
+.task.normal::before{ background:var(--gold); }
+.task.important::before{ background:var(--orange); }
+.task.urgent::before{ background:var(--red); }
+
+.task.done{
+  background:#eafff0;
+  border:2px solid rgba(34,197,94,0.25);
+}
+
+.task.done::before{
+  background:var(--green);
+}
+
+/* BUTTONS */
+.btns{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  justify-content:flex-end;
+}
+
+.btns button{
+  border:none;
+  padding:8px 11px;
+  border-radius:10px;
+  cursor:pointer;
+  font-size:12px;
+  font-weight:bold;
+  color:white;
+  box-shadow:0 4px 10px rgba(0,0,0,0.12);
+}
+
+.btn-vu{ background:#64748b; }
+.btn-progress{ background:#2563eb; }
+.btn-done{ background:#16a34a; }
+.btn-delete{ background:#dc2626; }
+
+/* QUICK MESSAGES */
+.quick-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:12px;
+}
+
+.quick-grid button{
+  border:none;
+  padding:16px;
+  border-radius:16px;
+  background:linear-gradient(135deg,var(--dark),#18384e);
+  color:white;
+  cursor:pointer;
+  font-weight:bold;
+  box-shadow:0 8px 20px rgba(14,41,60,0.18);
+}
+
+/* ========================= */
+/* MODE CLAIR (AJOUT UNIQUEMENT) */
+/* ========================= */
+
+.focus-mode .tabs button:not(#focusBtn),
+.focus-mode .filter-bar,
+.focus-mode .quick-grid,
+.focus-mode h2{
+  display:none !important;
+}
+
+.focus-mode #focusBtn{
+  background:#22c55e !important;
+  color:white !important;
+}
+
+.focus-mode header{
+  justify-content:flex-start;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <img src="logo.png" class="logo" alt="Logo">
+
+  <div class="header-right">
+    <div id="userBox">Chargement...</div>
+    <div id="clock"></div>
+    <button class="logout" onclick="logout()">Déconnexion</button>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="active" onclick="switchTab(0, event)">📋 Tâches</button>
+  <button onclick="switchTab(1, event)">✅ Terminées</button>
+  <button onclick="switchTab(2, event)">⚡ Messages</button>
+
+  <!-- AJOUT MODE CLAIR -->
+  <button onclick="toggleFocusMode()" id="focusBtn">🧹 Mode clair</button>
+</div>
+
+<!-- ONGLET TÂCHES -->
+<div class="view active">
+  <div class="card">
+
+    <div id="taskForm">
+      <input id="title" placeholder="Nom de la tâche">
+
+      <select id="priority">
+        <option value="normal">Normale</option>
+        <option value="important">Importante</option>
+        <option value="urgent">Urgente</option>
+      </select>
+
+      <button class="primary" onclick="addTask()">Créer</button>
+
+      <div class="filter-bar">
+        <button class="active" onclick="setFilter('all', event)">Toutes</button>
+        <button onclick="setFilter('important', event)">Importantes</button>
+        <button onclick="setFilter('urgent', event)">Urgentes</button>
+      </div>
+    </div>
+
+    <div id="tasks"></div>
+  </div>
+</div>
+
+<!-- TERMINÉES -->
+<div class="view">
+  <div class="card">
+    <h2>Tâches terminées</h2>
+    <div id="done"></div>
+  </div>
+</div>
+
+<!-- MESSAGES -->
+<div class="view">
+  <div class="card">
+    <h2>Messages préenregistrés</h2>
+
+    <div class="quick-grid">
+      <button onclick="quickMessage('Venez me voir')">📢 Venez me voir</button>
+      <button onclick="quickMessage('Je pars')">🚗 Je pars</button>
+      <button onclick="quickMessage('Pause')">☕ Pause</button>
+      <button onclick="quickMessage('Urgence')">🚨 Urgence</button>
+      <button onclick="quickMessage('Besoin d’aide')">🛠️ Besoin d’aide</button>
+      <button onclick="quickMessage('Client arrivé')">👤 Client arrivé</button>
+    </div>
+  </div>
+</div>
+
+<!-- AUDIO -->
+<audio id="ding" src="ding.mp3"></audio>
+<audio id="importantSound" src="important.mp3"></audio>
+<audio id="urgentSound" src="urgent.mp3"></audio>
+<audio id="successSound" src="success.mp3"></audio>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+
+let currentUser = null;
+let currentFilter = "all";
+let allTasks = [];
+
+/* MODE CLAIR */
+function toggleFocusMode(){
+  document.body.classList.toggle("focus-mode");
+}
+
+/* RESTE DE TON SCRIPT IDENTIQUE */
+fetch("/me")
+  .then(r => r.json())
+  .then(user => {
+    currentUser = user;
+    document.getElementById("userBox").textContent =
+      "👤 " + user.username + " (" + user.role + ")";
+  });
+
+function updateClock(){
+  document.getElementById("clock").textContent =
+    new Date().toLocaleTimeString("fr-FR");
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+function logout(){
+  window.location.href = "/logout";
+}
+
+function switchTab(index, event){
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  document.querySelectorAll(".tabs button").forEach(b => b.classList.remove("active"));
+
+  document.querySelectorAll(".view")[index].classList.add("active");
+  event.target.classList.add("active");
+}
+
+function setFilter(filter, event){
+  currentFilter = filter;
+
+  document.querySelectorAll(".filter-bar button")
+    .forEach(btn => btn.classList.remove("active"));
+
+  event.target.classList.add("active");
+
+  render(allTasks);
+}
+
+function playAudio(id){
+  const audio = document.getElementById(id);
+  if(!audio) return;
+  audio.currentTime = 0;
+  audio.play().catch(()=>{});
+}
+
+function playPrioritySound(priority){
+  if(priority === "normal") playAudio("ding");
+  if(priority === "important") playAudio("importantSound");
+  if(priority === "urgent") playAudio("urgentSound");
+}
+
+function addTask(){
+  const title = document.getElementById("title").value;
+  const priority = document.getElementById("priority").value;
+
+  socket.emit("addTask",{task:{title,priority},user:currentUser});
+
+  playPrioritySound(priority);
+}
+
+function setStatus(index,status){
+  socket.emit("updateStatus",{index,status});
+  if(status==="terminé") playAudio("successSound");
+}
+
+function deleteTask(index){
+  if(currentUser.role!=="admin") return;
+  socket.emit("deleteTask",{index,user:currentUser});
+}
+
+function render(tasks){
+  allTasks = tasks;
+
+  const tasksDiv = document.getElementById("tasks");
+  const doneDiv = document.getElementById("done");
+
+  tasksDiv.innerHTML="";
+  doneDiv.innerHTML="";
+
+  tasks.forEach((t,i)=>{
+
+    if(t.status==="terminé"){
+      doneDiv.innerHTML+=`<div class="task done"><b>${t.title}</b></div>`;
+      return;
+    }
+
+    if(currentFilter!=="all" && t.priority!==currentFilter) return;
+
+    let del = currentUser.role==="admin"
+      ? `<button class="btn-delete" onclick="deleteTask(${i})">Suppr</button>`
+      : "";
+
+    tasksDiv.innerHTML+=`
+      <div class="task ${t.priority}">
+        <div><b>${t.title}</b></div>
+
+        <div class="btns">
+          <button class="btn-vu" onclick="setStatus(${i},'vu')">Vu</button>
+          <button class="btn-progress" onclick="setStatus(${i},'en cours')">En cours</button>
+          <button class="btn-done" onclick="setStatus(${i},'terminé')">Terminé</button>
+          ${del}
+        </div>
+      </div>
+    `;
+  });
+}
+
+socket.on("update",render);
+</script>
+
+</body>
+</html>
