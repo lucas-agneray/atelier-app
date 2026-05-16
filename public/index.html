@@ -26,6 +26,15 @@ body{
   color:var(--dark);
 }
 
+/* FOOTER */
+.footer-credit{
+  text-align:center;
+  padding:12px;
+  font-size:12px;
+  color:rgba(0,0,0,0.35);
+  font-style:italic;
+}
+
 /* HEADER */
 header{
   display:flex;
@@ -252,24 +261,96 @@ select:focus{
   box-shadow:0 8px 20px rgba(14,41,60,0.18);
 }
 
-/* ========================= */
-/* MODE CLAIR (AJOUT UNIQUEMENT) */
-/* ========================= */
-
+/* MODE CLAIR */
+.focus-mode header,
 .focus-mode .tabs button:not(#focusBtn),
+.focus-mode #taskForm,
 .focus-mode .filter-bar,
 .focus-mode .quick-grid,
-.focus-mode h2{
+.focus-mode h2,
+.focus-mode #done,
+.focus-mode .footer-credit{
   display:none !important;
 }
 
 .focus-mode #focusBtn{
-  background:#22c55e !important;
-  color:white !important;
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 9999;
+  background: #22c55e !important;
+  color: white !important;
+
+  /* Bouton plus petit */
+  padding: 8px 12px !important;
+  font-size: 13px !important;
+  min-width: auto !important;
+  border-radius: 10px !important;
+
+  /* Animation de disparition */
+  opacity: 1;
+  transition: opacity 0.3s ease;
 }
 
-.focus-mode header{
-  justify-content:flex-start;
+.focus-mode #focusBtn.hidden{
+  opacity: 0;
+  pointer-events: none;
+}
+
+.focus-mode .view{
+  display:none !important;
+}
+
+.focus-mode .view.active{
+  display:block !important;
+  padding:0 !important;
+}
+
+.focus-mode .card{
+  max-width:100% !important;
+  width:100% !important;
+  min-height:100vh !important;
+  margin:0 !important;
+  border-radius:0 !important;
+  padding:30px !important;
+  box-shadow:none !important;
+  background:white !important;
+}
+
+.focus-mode #tasks{
+  width:100%;
+}
+
+/* Agrandissement pour écran vertical */
+.focus-mode .task{
+  margin-top:24px !important;
+  padding:28px 30px 28px 38px !important;
+  border-radius:28px !important;
+}
+
+.focus-mode .task b{
+  font-size:42px !important;
+  line-height:1.25 !important;
+  font-weight:bold !important;
+}
+
+.focus-mode .task div[style*="font-size:12px"]{
+  font-size:24px !important;
+  margin-top:12px !important;
+  opacity:0.75 !important;
+}
+
+.focus-mode .btns{
+  gap:12px !important;
+  margin-left:20px !important;
+}
+
+.focus-mode .btns button{
+  padding:16px 22px !important;
+  font-size:22px !important;
+  border-radius:16px !important;
+  min-width:140px !important;
+  font-weight:bold !important;
 }
 </style>
 </head>
@@ -291,11 +372,9 @@ select:focus{
   <button onclick="switchTab(1, event)">✅ Terminées</button>
   <button onclick="switchTab(2, event)">⚡ Messages</button>
 
-  <!-- AJOUT MODE CLAIR -->
   <button onclick="toggleFocusMode()" id="focusBtn">🧹 Mode clair</button>
 </div>
 
-<!-- ONGLET TÂCHES -->
 <div class="view active">
   <div class="card">
 
@@ -321,7 +400,6 @@ select:focus{
   </div>
 </div>
 
-<!-- TERMINÉES -->
 <div class="view">
   <div class="card">
     <h2>Tâches terminées</h2>
@@ -329,7 +407,6 @@ select:focus{
   </div>
 </div>
 
-<!-- MESSAGES -->
 <div class="view">
   <div class="card">
     <h2>Messages préenregistrés</h2>
@@ -345,7 +422,10 @@ select:focus{
   </div>
 </div>
 
-<!-- AUDIO -->
+<div class="footer-credit">
+  design par lucas
+</div>
+
 <audio id="ding" src="ding.mp3"></audio>
 <audio id="importantSound" src="important.mp3"></audio>
 <audio id="urgentSound" src="urgent.mp3"></audio>
@@ -359,12 +439,27 @@ let currentUser = null;
 let currentFilter = "all";
 let allTasks = [];
 
-/* MODE CLAIR */
+/* ===== FIX SONS (SEULE MODIF) ===== */
+
+function playAudio(id){
+  const audio = document.getElementById(id);
+  if(!audio) return;
+  audio.currentTime = 0;
+  audio.play().catch(()=>{});
+}
+
+function playPrioritySound(priority){
+  if(priority === "normal") playAudio("ding");
+  if(priority === "important") playAudio("importantSound");
+  if(priority === "urgent") playAudio("urgentSound");
+}
+
+/* ===== TON CODE INCHANGÉ ===== */
+
 function toggleFocusMode(){
   document.body.classList.toggle("focus-mode");
 }
 
-/* RESTE DE TON SCRIPT IDENTIQUE */
 fetch("/me")
   .then(r => r.json())
   .then(user => {
@@ -403,19 +498,6 @@ function setFilter(filter, event){
   render(allTasks);
 }
 
-function playAudio(id){
-  const audio = document.getElementById(id);
-  if(!audio) return;
-  audio.currentTime = 0;
-  audio.play().catch(()=>{});
-}
-
-function playPrioritySound(priority){
-  if(priority === "normal") playAudio("ding");
-  if(priority === "important") playAudio("importantSound");
-  if(priority === "urgent") playAudio("urgentSound");
-}
-
 function addTask(){
   const title = document.getElementById("title").value;
   const priority = document.getElementById("priority").value;
@@ -427,12 +509,22 @@ function addTask(){
 
 function setStatus(index,status){
   socket.emit("updateStatus",{index,status});
+
   if(status==="terminé") playAudio("successSound");
+  else if(status==="important") playAudio("importantSound");
+  else if(status==="urgent") playAudio("urgentSound");
+  else playAudio("ding");
 }
 
 function deleteTask(index){
   if(currentUser.role!=="admin") return;
   socket.emit("deleteTask",{index,user:currentUser});
+}
+
+/* MESSAGE QUICK */
+function quickMessage(message){
+  document.getElementById("title").value = message;
+  switchTab(0, { target: document.querySelectorAll(".tabs button")[0] });
 }
 
 function render(tasks){
@@ -447,7 +539,14 @@ function render(tasks){
   tasks.forEach((t,i)=>{
 
     if(t.status==="terminé"){
-      doneDiv.innerHTML+=`<div class="task done"><b>${t.title}</b></div>`;
+      doneDiv.innerHTML+=`
+        <div class="task done">
+          <b>${t.title}</b>
+          <div style="font-size:12px;opacity:0.7;">
+            État : terminé
+          </div>
+        </div>
+      `;
       return;
     }
 
@@ -459,7 +558,12 @@ function render(tasks){
 
     tasksDiv.innerHTML+=`
       <div class="task ${t.priority}">
-        <div><b>${t.title}</b></div>
+        <div>
+          <b>${t.title}</b>
+          <div style="font-size:12px;opacity:0.7;">
+            État : ${t.status || "vu"}
+          </div>
+        </div>
 
         <div class="btns">
           <button class="btn-vu" onclick="setStatus(${i},'vu')">Vu</button>
@@ -473,6 +577,46 @@ function render(tasks){
 }
 
 socket.on("update",render);
+let focusBtnTimeout;
+
+function resetFocusButtonTimer(){
+  const btn = document.getElementById("focusBtn");
+
+  /* Ne rien faire si le mode clair n'est pas actif */
+  if(!document.body.classList.contains("focus-mode")) return;
+
+  /* Réaffiche le bouton */
+  btn.classList.remove("hidden");
+
+  /* Redémarre le compteur */
+  clearTimeout(focusBtnTimeout);
+  focusBtnTimeout = setTimeout(() => {
+    btn.classList.add("hidden");
+  }, 3000); // 3 secondes d'inactivité
+}
+
+/* Détecte l'activité utilisateur */
+document.addEventListener("mousemove", resetFocusButtonTimer);
+document.addEventListener("keydown", resetFocusButtonTimer);
+document.addEventListener("click", resetFocusButtonTimer);
+
+/* REMPLACE ta fonction toggleFocusMode() par celle-ci */
+function toggleFocusMode(){
+  document.body.classList.toggle("focus-mode");
+
+  const btn = document.getElementById("focusBtn");
+
+  if(document.body.classList.contains("focus-mode")){
+    /* Mode clair activé */
+    btn.classList.remove("hidden");
+    resetFocusButtonTimer();
+  } else {
+    /* Mode clair désactivé */
+    clearTimeout(focusBtnTimeout);
+    btn.classList.remove("hidden");
+  }
+}
+
 </script>
 
 </body>
