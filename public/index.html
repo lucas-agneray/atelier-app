@@ -352,9 +352,41 @@ select:focus{
   min-width:140px !important;
   font-weight:bold !important;
 }
+/* BARRE HAUT MODE CLAIR */
+.focus-topbar{
+  display:none;
+}
+
+.focus-mode .focus-topbar{
+  display:flex;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:60px;
+  background:white;
+  box-shadow:0 4px 12px rgba(0,0,0,0.1);
+  align-items:center;
+  justify-content:space-between;
+  padding:0 20px;
+  z-index:9998;
+}
+
+.focus-logo{
+  height:40px;
+}
+
+#focusClock{
+  font-size:20px;
+  font-weight:bold;
+  color:#0e293c;
+}
 </style>
 </head>
-
+<div class="focus-topbar">
+  <img src="logo.png" class="focus-logo">
+  <div id="focusClock"></div>
+</div>
 <body>
 
 <header>
@@ -616,6 +648,15 @@ function toggleFocusMode(){
     btn.classList.remove("hidden");
   }
 }
+function updateFocusClock(){
+  const el = document.getElementById("focusClock");
+  if(!el) return;
+
+  el.textContent = new Date().toLocaleTimeString("fr-FR");
+}
+
+setInterval(updateFocusClock, 1000);
+updateFocusClock();
 
 </script>
 
