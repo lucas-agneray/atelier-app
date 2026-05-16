@@ -88,42 +88,61 @@ io.on("connection", (socket) => {
   socket.emit("update", tasks);
 
   /* ADD */
-  socket.on("addTask", ({ task, user }) => {
-    if (!user) return;
+ socket.on("addTask", ({ task, user }) => {
+  if (!user) return;
 
-    tasks.push({
-      title: task.title,
-      priority: task.priority,
-      status: "active",
-      createdBy: user.username
-    });
+  const newTask = {
+    title: task.title,
+    priority: task.priority,
+    status: "active",
+    createdBy: user.username
+  };
 
-    saveTasks();
-    io.emit("update", tasks);
-  });
+  tasks.push(newTask);
+  saveTasks();
 
+  // 1) update des tâches
+  io.emit("update", tasks);
+
+  // 2) petit délai pour éviter que le client rate l’event
+  setTimeout(() => {
+    let sound = "normal";
+
+    if (newTask.priority === "urgent") sound = "urgent";
+    else if (newTask.priority === "important") sound = "important";
+
+    io.emit("playSound", sound);
+  }, 50);
+});
   /* UPDATE */
   socket.on("updateStatus", ({ index, status }) => {
-    if (!tasks[index]) return;
+  if (!tasks[index]) return;
 
-    tasks[index].status = status;
-    saveTasks();
+  tasks[index].status = status;
+  saveTasks();
 
-    if (status === "terminé") {
-      io.emit("update", tasks);
+  let sound = "normal";
 
-      setTimeout(() => {
-        if (tasks[index] && tasks[index].status === "terminé") {
-          tasks.splice(index, 1);
-          saveTasks();
-          io.emit("update", tasks);
-        }
-      }, 10000);
-    } else {
-      io.emit("update", tasks);
-    }
-  });
+  if (status === "terminé") sound = "success";
+  else if (status === "urgent") sound = "urgent";
+  else if (status === "important") sound = "important";
 
+  io.emit("playSound", sound);
+
+  if (status === "terminé") {
+    io.emit("update", tasks);
+
+    setTimeout(() => {
+      if (tasks[index] && tasks[index].status === "terminé") {
+        tasks.splice(index, 1);
+        saveTasks();
+        io.emit("update", tasks);
+      }
+    }, 2000);
+  } else {
+    io.emit("update", tasks);
+  }
+});
   /* DELETE */
   socket.on("deleteTask", ({ index, user }) => {
     if (!user || user.role !== "admin") return;

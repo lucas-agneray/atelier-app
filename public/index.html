@@ -464,9 +464,16 @@ select:focus{
 <audio id="successSound" src="success.mp3"></audio>
 
 <script src="/socket.io/socket.io.js"></script>
+
 <script>
 const socket = io();
 
+socket.on("playSound", (type) => {
+  if (type === "normal") playAudio("ding");
+  else if (type === "important") playAudio("importantSound");
+  else if (type === "urgent") playAudio("urgentSound");
+  else if (type === "success") playAudio("successSound");
+});
 let currentUser = null;
 let currentFilter = "all";
 let allTasks = [];
@@ -534,18 +541,16 @@ function addTask(){
   const title = document.getElementById("title").value;
   const priority = document.getElementById("priority").value;
 
-  socket.emit("addTask",{task:{title,priority},user:currentUser});
-
-  playPrioritySound(priority);
+  // Envoie la tâche au serveur.
+  // Le serveur déclenchera ensuite io.emit("playSound", task.priority)
+  // pour tous les appareils connectés.
+  socket.emit("addTask", {
+    task: { title, priority },
+    user: currentUser
+  });
 }
-
 function setStatus(index,status){
   socket.emit("updateStatus",{index,status});
-
-  if(status==="terminé") playAudio("successSound");
-  else if(status==="important") playAudio("importantSound");
-  else if(status==="urgent") playAudio("urgentSound");
-  else playAudio("ding");
 }
 
 function deleteTask(index){
